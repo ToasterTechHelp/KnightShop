@@ -46,7 +46,9 @@ function App() {
   const handleAddToCart = (item) => {
     console.log('[Frontend] Adding item to cart:', item.name);
     
-    // Bug: Golden Latte causes an error when adding to cart
+    // The following block was simulating an error for 'Golden Latte'.
+    // It has been removed to allow 'Golden Latte' to be added to the cart normally.
+    /*
     if (item.name === 'Golden Latte') {
       const errorData = {
         level: 'ERROR',
@@ -68,6 +70,7 @@ function App() {
       alert('Oops! There was an error adding this item to your cart. Please try a different item.');
       return; // Return instead of throw to prevent app crash
     }
+    */
     
     setCart([...cart, { ...item, cartId: Date.now() }]);
     console.log('[Frontend] Cart updated. Total items:', cart.length + 1);

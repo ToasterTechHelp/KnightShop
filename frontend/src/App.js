@@ -37,13 +37,14 @@ function App() {
   const handleAddToCart = (item) => {
     console.log('[Frontend] Adding item to cart:', item.name);
     
-    // Bug: Golden Latte causes an error when adding to cart
-    if (item.name === 'Golden Latte') {
-      console.error('[Frontend] ERROR: Failed to add Golden Latte to cart - item.price is undefined');
-      console.error('[Frontend] Stack trace: Cannot read property "toFixed" of undefined');
-      alert('Oops! There was an error adding this item to your cart. Please try a different item.');
-      throw new Error(`Cannot add ${item.name} to cart: price calculation failed`);
-    }
+    // The intentional bug causing an error for 'Golden Latte' has been removed.
+    // Ensuring item.price is handled gracefully throughout the application.
+    // if (item.name === 'Golden Latte') {
+    //   console.error('[Frontend] ERROR: Failed to add Golden Latte to cart - item.price is undefined');
+    //   console.error('[Frontend] Stack trace: Cannot read property "toFixed" of undefined');
+    //   alert('Oops! There was an error adding this item to your cart. Please try a different item.');
+    //   throw new Error(`Cannot add ${item.name} to cart: price calculation failed`);
+    // }
     
     setCart([...cart, { ...item, cartId: Date.now() }]);
     console.log('[Frontend] Cart updated. Total items:', cart.length + 1);
@@ -73,7 +74,7 @@ function App() {
   };
 
   const getTotalPrice = () => {
-    return cart.reduce((sum, item) => sum + item.price, 0);
+    return cart.reduce((sum, item) => sum + (item.price || 0), 0);
   };
 
   return (
@@ -83,7 +84,7 @@ function App() {
         <p className="subtitle">Your favorite spot at UCF</p>
         {cart.length > 0 && (
           <div className="cart-badge" onClick={handleGoToOrder}>
-            🛒 {cart.length} items - ${getTotalPrice().toFixed(2)}
+            🛒 {cart.length} items - ${(getTotalPrice()).toFixed(2)}
           </div>
         )}
       </header>
@@ -108,7 +109,7 @@ function App() {
                     >
                       <h3>{item.name}</h3>
                       <p className="description">{item.description}</p>
-                      <p className="price">${item.price.toFixed(2)}</p>
+                      <p className="price">${(item.price || 0).toFixed(2)}</p>
                       <button className="learn-more-btn">Learn More →</button>
                     </div>
                   ))}
@@ -161,7 +162,7 @@ function App() {
               )}
 
               <div className="item-actions">
-                <p className="item-price">${selectedItem.price.toFixed(2)}</p>
+                <p className="item-price">${(selectedItem.price || 0).toFixed(2)}</p>
                 <button 
                   className="add-to-cart-btn"
                   onClick={() => {
@@ -198,7 +199,7 @@ function App() {
                         <p>{item.description}</p>
                       </div>
                       <div className="cart-item-actions">
-                        <p className="cart-item-price">${item.price.toFixed(2)}</p>
+                        <p className="cart-item-price">${(item.price || 0).toFixed(2)}</p>
                         <button 
                           className="remove-btn"
                           onClick={() => handleRemoveFromCart(item.cartId)}
@@ -213,7 +214,7 @@ function App() {
                 <div className="order-summary">
                   <div className="summary-row">
                     <span>Subtotal:</span>
-                    <span>${getTotalPrice().toFixed(2)}</span>
+                    <span>${(getTotalPrice()).toFixed(2)}</span>
                   </div>
                   <div className="summary-row">
                     <span>Tax (6.5%):</span>

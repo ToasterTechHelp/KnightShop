@@ -145,14 +145,18 @@ app.get('/api/menu/:id', (req, res) => {
 
 // Error logging endpoint
 app.post('/api/log/error', (req, res) => {
-  const errorData = req.body || {};
+  // Ensure req.body is treated as an object for property access.
+  // This handles cases where req.body might be null/undefined or an unexpected type if middleware is bypassed.
+  const errorData = (typeof req.body === 'object' && req.body !== null && !Array.isArray(req.body))
+    ? req.body
+    : {};
 
   // Normalize and enrich error data
   const normalized = {
     id: `ERR-${Date.now()}`,
     level: errorData.level || 'ERROR',
     source: errorData.source || 'Frontend',
-    message: errorData.message || 'Unknown error',
+    message: String(errorData.message || 'Unknown error'), // Ensure message is always a string
     errorType: errorData.errorType || 'UnknownError',
     itemName: errorData.itemName || null,
     itemId: errorData.itemId || null,

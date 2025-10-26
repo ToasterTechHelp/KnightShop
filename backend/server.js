@@ -165,15 +165,17 @@ app.post('/api/log/error', (req, res) => {
   errorLogs.push(normalized);
   if (errorLogs.length > 50) errorLogs.shift();
 
-  // Print to container logs in a clear format
-  console.error('='.repeat(70));
-  console.error(`[${normalized.source}] 🔴 ${normalized.level}: ${normalized.message}`);
-  console.error(`[${normalized.source}] Error Type: ${normalized.errorType}`);
-  if (normalized.itemName) console.error(`[${normalized.source}] Item: ${normalized.itemName} (ID: ${normalized.itemId})`);
-  if (normalized.userAction) console.error(`[${normalized.source}] User Action: ${normalized.userAction}`);
-  console.error(`[${normalized.source}] Timestamp: ${normalized.timestamp}`);
-  if (normalized.stackTrace) console.error(`[${normalized.source}] Stack Trace: ${normalized.stackTrace}`);
-  console.error('='.repeat(70));
+  // Print to container logs in a clear, consolidated format
+  let logMessage = '='.repeat(70) + '\n';
+  logMessage += `[${normalized.source}] 🔴 ${normalized.level}: ${normalized.message}\n`;
+  logMessage += `[${normalized.source}] Error Type: ${normalized.errorType}\n`;
+  if (normalized.itemName) logMessage += `[${normalized.source}] Item: ${normalized.itemName} (ID: ${normalized.itemId})\n`;
+  if (normalized.userAction) logMessage += `[${normalized.source}] User Action: ${normalized.userAction}\n`;
+  logMessage += `[${normalized.source}] Timestamp: ${normalized.timestamp}\n`;
+  if (normalized.stackTrace) logMessage += `[${normalized.source}] Stack Trace: ${normalized.stackTrace}\n`;
+  logMessage += '='.repeat(70);
+
+  console.error(logMessage); // Single console.error call
 
   res.json({ success: true, id: normalized.id, message: 'Error logged' });
 });

@@ -13,12 +13,6 @@ app.use(morgan('combined')); // Logging HTTP requests
 // In-memory error log store (for quick inspection/debugging)
 const errorLogs = [];
 
-// Custom logging middleware
-app.use((req, res, next) => {
-  console.log(`[Backend] ${new Date().toISOString()} - ${req.method} ${req.path}`);
-  next();
-});
-
 // Sample menu data with detailed information
 const menuItems = [
   {

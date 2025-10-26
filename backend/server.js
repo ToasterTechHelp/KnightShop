@@ -98,7 +98,7 @@ const menuItems = [
 // Routes
 app.get('/', (req, res) => {
   console.log('[Backend] Root endpoint accessed');
-  res.json({ 
+  res.json({
     message: 'KnightShop Cafe API',
     status: 'running',
     endpoints: {
@@ -110,7 +110,7 @@ app.get('/', (req, res) => {
 
 app.get('/api/health', (req, res) => {
   console.log('[Backend] Health check endpoint accessed');
-  res.json({ 
+  res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
     service: 'KnightShop Backend'
@@ -131,9 +131,9 @@ app.get('/api/menu', (req, res) => {
 app.get('/api/menu/:id', (req, res) => {
   const itemId = parseInt(req.params.id);
   console.log(`[Backend] Menu item requested: ID ${itemId}`);
-  
+
   const item = menuItems.find(i => i.id === itemId);
-  
+
   if (item) {
     console.log(`[Backend] Menu item found: ${item.name}`);
     res.json(item);
@@ -147,18 +147,18 @@ app.get('/api/menu/:id', (req, res) => {
 app.post('/api/log/error', (req, res) => {
   const errorData = req.body || {};
 
-  // Normalize and enrich error data
+  // Normalize and enrich error data, ensuring consistent string types for relevant fields
   const normalized = {
     id: `ERR-${Date.now()}`,
-    level: errorData.level || 'ERROR',
-    source: errorData.source || 'Frontend',
-    message: errorData.message || 'Unknown error',
-    errorType: errorData.errorType || 'UnknownError',
-    itemName: errorData.itemName || null,
+    level: String(errorData.level || 'ERROR'),
+    source: String(errorData.source || 'Frontend'),
+    message: String(errorData.message || 'Unknown error'),
+    errorType: String(errorData.errorType || 'UnknownError'),
+    itemName: errorData.itemName ? String(errorData.itemName) : null,
     itemId: errorData.itemId || null,
-    userAction: errorData.userAction || null,
-    stackTrace: errorData.stackTrace || null,
-    timestamp: errorData.timestamp || new Date().toISOString(),
+    userAction: errorData.userAction ? String(errorData.userAction) : null,
+    stackTrace: errorData.stackTrace ? String(errorData.stackTrace) : null,
+    timestamp: String(errorData.timestamp || new Date().toISOString()),
   };
 
   // Store in memory (keep last 50)
@@ -172,7 +172,8 @@ app.post('/api/log/error', (req, res) => {
   if (normalized.itemName) console.error(`[${normalized.source}] Item: ${normalized.itemName} (ID: ${normalized.itemId})`);
   if (normalized.userAction) console.error(`[${normalized.source}] User Action: ${normalized.userAction}`);
   console.error(`[${normalized.source}] Timestamp: ${normalized.timestamp}`);
-  if (normalized.stackTrace) console.error(`[${normalized.source}] Stack Trace: ${normalized.stackTrace}`);
+  // Only print stack trace if it's a non-empty string after trimming
+  if (normalized.stackTrace && normalized.stackTrace.trim()) console.error(`[${normalized.source}] Stack Trace: ${normalized.stackTrace}`);
   console.error('='.repeat(70));
 
   res.json({ success: true, id: normalized.id, message: 'Error logged' });
@@ -187,7 +188,7 @@ app.get('/api/logs', (req, res) => {
 app.post('/api/orders', (req, res) => {
   console.log('[Backend] New order received');
   const { items, total } = req.body;
-  
+
   try {
     if (!items || items.length === 0) {
       console.warn('[Backend] Order rejected: No items in order');
@@ -196,12 +197,12 @@ app.post('/api/orders', (req, res) => {
 
     const orderId = `ORD-${Date.now()}`;
     const estimatedTime = 15 + Math.floor(Math.random() * 10); // 15-25 minutes
-    
+
     console.log(`[Backend] Order created successfully: ${orderId}`);
     console.log(`[Backend] Order contains ${items.length} items`);
     console.log(`[Backend] Total: $${total}`);
     console.log(`[Backend] Estimated pickup time: ${estimatedTime} minutes`);
-    
+
     res.json({
       success: true,
       orderId,
@@ -223,9 +224,9 @@ app.use((req, res) => {
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('[Backend] Error occurred:', err.stack);
-  res.status(500).json({ 
+  res.status(500).json({
     error: 'Something went wrong!',
-    message: err.message 
+    message: err.message
   });
 });
 

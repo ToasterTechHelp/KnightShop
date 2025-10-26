@@ -10,6 +10,9 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan('combined')); // Logging HTTP requests
 
+// In-memory error log store (for quick inspection/debugging)
+const errorLogs = [];
+
 // Custom logging middleware
 app.use((req, res, next) => {
   console.log(`[Backend] ${new Date().toISOString()} - ${req.method} ${req.path}`);
@@ -140,6 +143,46 @@ app.get('/api/menu/:id', (req, res) => {
   }
 });
 
+// Error logging endpoint
+app.post('/api/log/error', (req, res) => {
+  const errorData = req.body || {};
+
+  // Normalize and enrich error data
+  const normalized = {
+    id: `ERR-${Date.now()}`,
+    level: errorData.level || 'ERROR',
+    source: errorData.source || 'Frontend',
+    message: errorData.message || 'Unknown error',
+    errorType: errorData.errorType || 'UnknownError',
+    itemName: errorData.itemName || null,
+    itemId: errorData.itemId || null,
+    userAction: errorData.userAction || null,
+    stackTrace: errorData.stackTrace || null,
+    timestamp: errorData.timestamp || new Date().toISOString(),
+  };
+
+  // Store in memory (keep last 50)
+  errorLogs.push(normalized);
+  if (errorLogs.length > 50) errorLogs.shift();
+
+  // Print to container logs in a clear format
+  console.error('='.repeat(70));
+  console.error(`[${normalized.source}] 🔴 ${normalized.level}: ${normalized.message}`);
+  console.error(`[${normalized.source}] Error Type: ${normalized.errorType}`);
+  if (normalized.itemName) console.error(`[${normalized.source}] Item: ${normalized.itemName} (ID: ${normalized.itemId})`);
+  if (normalized.userAction) console.error(`[${normalized.source}] User Action: ${normalized.userAction}`);
+  console.error(`[${normalized.source}] Timestamp: ${normalized.timestamp}`);
+  if (normalized.stackTrace) console.error(`[${normalized.source}] Stack Trace: ${normalized.stackTrace}`);
+  console.error('='.repeat(70));
+
+  res.json({ success: true, id: normalized.id, message: 'Error logged' });
+});
+
+// Simple endpoint to retrieve recent error logs (for debugging/verification)
+app.get('/api/logs', (req, res) => {
+  res.json({ count: errorLogs.length, logs: errorLogs });
+});
+
 // Order endpoint
 app.post('/api/orders', (req, res) => {
   console.log('[Backend] New order received');
@@ -187,7 +230,7 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log('='.repeat(50));
   console.log(`[Backend] KnightShop Cafe API Server`);
   console.log(`[Backend] Server is running on port ${PORT}`);

@@ -10,10 +10,19 @@ function App() {
   const [cart, setCart] = useState([]);
   const [currentView, setCurrentView] = useState('menu'); // 'menu', 'details', 'order'
 
+  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
+  // Function to log errors to backend
+  const logErrorToBackend = (errorData) => {
+    axios.post(`${apiUrl}/api/log/error`, errorData)
+      .then((res) => {
+        console.log('[Frontend] Error logged to backend:', res.data);
+      })
+      .catch(err => console.error('Failed to log error to backend:', err.message));
+  };
+
   useEffect(() => {
     console.log('[Frontend] Fetching menu items from backend...');
-    
-    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
     
     axios.get(`${apiUrl}/api/menu`)
       .then(response => {
@@ -26,7 +35,7 @@ function App() {
         setError('Failed to load menu items');
         setLoading(false);
       });
-  }, []);
+  }, [apiUrl]);
 
   const handleItemClick = (item) => {
     console.log('[Frontend] Item selected:', item.name);
@@ -39,10 +48,25 @@ function App() {
     
     // Bug: Golden Latte causes an error when adding to cart
     if (item.name === 'Golden Latte') {
-      console.error('[Frontend] ERROR: Failed to add Golden Latte to cart - item.price is undefined');
-      console.error('[Frontend] Stack trace: Cannot read property "toFixed" of undefined');
+      const errorData = {
+        level: 'ERROR',
+        source: 'Frontend',
+        message: `Failed to add ${item.name} to cart - item.price is undefined`,
+        errorType: 'PriceCalculationError',
+        itemName: item.name,
+        itemId: item.id,
+        stackTrace: 'at handleAddToCart (App.js:45:12)',
+        timestamp: new Date().toISOString(),
+        userAction: 'add_to_cart'
+      };
+      
+      console.error('[Frontend] ❌ ERROR:', errorData);
+      
+      // Send error to backend for logging
+      logErrorToBackend(errorData);
+      
       alert('Oops! There was an error adding this item to your cart. Please try a different item.');
-      throw new Error(`Cannot add ${item.name} to cart: price calculation failed`);
+      return; // Return instead of throw to prevent app crash
     }
     
     setCart([...cart, { ...item, cartId: Date.now() }]);

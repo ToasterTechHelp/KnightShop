@@ -47,27 +47,7 @@ function App() {
     console.log('[Frontend] Adding item to cart:', item.name);
     
     // Bug: Golden Latte causes an error when adding to cart
-    if (item.name === 'Golden Latte') {
-      const errorData = {
-        level: 'ERROR',
-        source: 'Frontend',
-        message: `Failed to add ${item.name} to cart - item.price is undefined`,
-        errorType: 'PriceCalculationError',
-        itemName: item.name,
-        itemId: item.id,
-        stackTrace: 'at handleAddToCart (App.js:45:12)',
-        timestamp: new Date().toISOString(),
-        userAction: 'add_to_cart'
-      };
-      
-      console.error('[Frontend] ❌ ERROR:', errorData);
-      
-      // Send error to backend for logging
-      logErrorToBackend(errorData);
-      
-      alert('Oops! There was an error adding this item to your cart. Please try a different item.');
-      return; // Return instead of throw to prevent app crash
-    }
+    // This block is removed to fix the intentional error simulation.
     
     setCart([...cart, { ...item, cartId: Date.now() }]);
     console.log('[Frontend] Cart updated. Total items:', cart.length + 1);

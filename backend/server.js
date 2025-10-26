@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
+const os = require('os'); // Added for hostname
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -159,21 +160,25 @@ app.post('/api/log/error', (req, res) => {
     userAction: errorData.userAction || null,
     stackTrace: errorData.stackTrace || null,
     timestamp: errorData.timestamp || new Date().toISOString(),
+    // Add server context for better identification in production/distributed systems
+    hostname: os.hostname(), 
+    serverTimestamp: new Date().toISOString(),
+    requestContext: {
+      method: req.method,
+      path: req.path,
+      ip: req.ip,
+      // Consider adding 'user-agent': req.headers['user-agent'] if relevant
+    }
   };
 
   // Store in memory (keep last 50)
   errorLogs.push(normalized);
   if (errorLogs.length > 50) errorLogs.shift();
 
-  // Print to container logs in a clear format
-  console.error('='.repeat(70));
-  console.error(`[${normalized.source}] 🔴 ${normalized.level}: ${normalized.message}`);
-  console.error(`[${normalized.source}] Error Type: ${normalized.errorType}`);
-  if (normalized.itemName) console.error(`[${normalized.source}] Item: ${normalized.itemName} (ID: ${normalized.itemId})`);
-  if (normalized.userAction) console.error(`[${normalized.source}] User Action: ${normalized.userAction}`);
-  console.error(`[${normalized.source}] Timestamp: ${normalized.timestamp}`);
-  if (normalized.stackTrace) console.error(`[${normalized.source}] Stack Trace: ${normalized.stackTrace}`);
-  console.error('='.repeat(70));
+  // Print to container logs in a clear, structured JSON format for better parsing
+  // Using null, 2 for pretty-printing in development for readability. 
+  // In production, `JSON.stringify(normalized)` can be used to save space for log aggregators.
+  console.error(JSON.stringify(normalized, null, 2));
 
   res.json({ success: true, id: normalized.id, message: 'Error logged' });
 });

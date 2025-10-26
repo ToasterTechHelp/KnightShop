@@ -179,9 +179,15 @@ app.post('/api/log/error', (req, res) => {
 });
 
 // Simple endpoint to retrieve recent error logs (for debugging/verification)
-app.get('/api/logs', (req, res) => {
-  res.json({ count: errorLogs.length, logs: errorLogs });
-});
+// This endpoint is enabled only in non-production environments for security.
+if (process.env.NODE_ENV !== 'production') {
+  app.get('/api/logs', (req, res) => {
+    res.json({ count: errorLogs.length, logs: errorLogs });
+  });
+  console.log('[Backend] /api/logs endpoint enabled (non-production environment)');
+} else {
+  console.log('[Backend] /api/logs endpoint disabled (production environment)');
+}
 
 // Order endpoint
 app.post('/api/orders', (req, res) => {

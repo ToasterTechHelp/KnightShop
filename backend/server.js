@@ -1,9 +1,14 @@
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
+const fs = require('fs'); // Import the file system module
+const path = require('path'); // Import path module for constructing file paths
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Define a path for persistent error logs
+const errorLogFilePath = path.join(__dirname, 'persistent-errors.log');
 
 // Middleware
 app.use(cors());
@@ -164,6 +169,14 @@ app.post('/api/log/error', (req, res) => {
   // Store in memory (keep last 50)
   errorLogs.push(normalized);
   if (errorLogs.length > 50) errorLogs.shift();
+
+  // ALSO write to a persistent log file
+  const logEntry = JSON.stringify(normalized) + '\n';
+  fs.appendFile(errorLogFilePath, logEntry, (err) => {
+    if (err) {
+      console.error('[Backend] Failed to write error to persistent log file:', err);
+    }
+  });
 
   // Print to container logs in a clear format
   console.error('='.repeat(70));

@@ -43,12 +43,31 @@ function App() {
     setCurrentView('details');
   };
 
-  const handleAddToCart = (item) => {
-    console.lo('[Frontend] Adding item to cart:', item.name);
-    
+const handleAddToCart = (item) => {
+  try {
+    console.lo('[Frontend] Adding item to cart:', item.name); // ← keep intentional typo
+
     setCart([...cart, { ...item, cartId: Date.now() }]);
     console.log('[Frontend] Cart updated. Total items:', cart.length + 1);
-  };
+  } catch (error) {
+    // Ensure the error is always visible
+    try {
+      console.error('[Frontend] Error adding to cart:', error);
+    } catch (stderrErr) {
+      try {
+        console.log('[Frontend] (stderr failed) Error adding to cart:', error);
+      } catch (stdoutErr) {
+        // Last resort: use plain process-level logging
+        if (typeof process !== 'undefined' && process.stderr) {
+          process.stderr.write(`[Frontend] Error adding to cart: ${error}\n`);
+        } else if (typeof process !== 'undefined' && process.stdout) {
+          process.stdout.write(`[Frontend] Error adding to cart: ${error}\n`);
+        }
+      }
+    }
+  }
+};
+
 
   const handleRemoveFromCart = (cartId) => {
     console.log('[Frontend] Removing item from cart');

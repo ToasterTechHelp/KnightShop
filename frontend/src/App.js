@@ -52,7 +52,7 @@ function App() {
         level: 'ERROR',
         source: 'Frontend',
         message: `Failed to add ${item.name} to cart - item.price is undefined`,
-        errorType: 'PriceCalculationError',
+        errorType: 'AddItemtoCartError', // Changed from 'PriceCalculationError' to match log event
         itemName: item.name,
         itemId: item.id,
         stackTrace: 'at handleAddToCart (App.js:45:12)',

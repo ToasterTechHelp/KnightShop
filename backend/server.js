@@ -171,6 +171,20 @@ app.post('/api/orders', (req, res) => {
   }
 });
 
+// Endpoint for receiving frontend error logs
+app.post('/api/log/error', (req, res) => {
+  const { message, stack, info, url, userAgent } = req.body;
+  console.error(`[Frontend Error] ${new Date().toISOString()}`);
+  if (message) console.error(`[Frontend Error] Message: ${message}`);
+  if (url) console.error(`[Frontend Error] URL: ${url}`);
+  if (userAgent) console.error(`[Frontend Error] User-Agent: ${userAgent}`);
+  if (info) console.error(`[Frontend Error] Info: ${JSON.stringify(info)}`);
+  if (stack) console.error(`[Frontend Error] Stack: \n${stack}`);
+  else console.error(`[Frontend Error] Raw Payload: ${JSON.stringify(req.body)}`);
+
+  res.status(200).json({ success: true, message: 'Error log received' });
+});
+
 // 404 handler
 app.use((req, res) => {
   console.warn(`[Backend] 404 - Route not found: ${req.method} ${req.path}`);

@@ -43,31 +43,35 @@ function App() {
     setCurrentView('details');
   };
 
-const handleAddToCart = (item) => {
-  try {
-    console.lo('[Frontend] Adding item to cart:', item.name); // ← keep intentional typo
-
+  const handleAddToCart = (item) => {
+    console.log('[Frontend] Adding item to cart:', item.name);
+    
+    // Bug: Golden Latte causes an error when adding to cart
+    if (item.name === 'Golden Latte') {
+      const errorData = {
+        level: 'ERROR',
+        source: 'Frontend',
+        message: `Failed to add ${item.name} to cart - item.price is undefined`,
+        errorType: 'PriceCalculationError',
+        itemName: item.name,
+        itemId: item.id,
+        stackTrace: 'at handleAddToCart (App.js:45:12)',
+        timestamp: new Date().toISOString(),
+        userAction: 'add_to_cart'
+      };
+      
+      console.error('[Frontend] ❌ ERROR:', errorData);
+      
+      // Send error to backend for logging
+      logErrorToBackend(errorData);
+      
+      alert('Oops! There was an error adding this item to your cart. Please try a different item.');
+      return; // Return instead of throw to prevent app crash
+    }
+    
     setCart([...cart, { ...item, cartId: Date.now() }]);
     console.log('[Frontend] Cart updated. Total items:', cart.length + 1);
-  } catch (error) {
-    // Ensure the error is always visible
-    try {
-      console.error('[Frontend] Error adding to cart:', error);
-    } catch (stderrErr) {
-      try {
-        console.log('[Frontend] (stderr failed) Error adding to cart:', error);
-      } catch (stdoutErr) {
-        // Last resort: use plain process-level logging
-        if (typeof process !== 'undefined' && process.stderr) {
-          process.stderr.write(`[Frontend] Error adding to cart: ${error}\n`);
-        } else if (typeof process !== 'undefined' && process.stdout) {
-          process.stdout.write(`[Frontend] Error adding to cart: ${error}\n`);
-        }
-      }
-    }
-  }
-};
-
+  };
 
   const handleRemoveFromCart = (cartId) => {
     console.log('[Frontend] Removing item from cart');

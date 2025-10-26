@@ -159,7 +159,7 @@ app.post('/api/orders', (req, res) => {
     console.log(`[Backend] Total: $${total}`);
     console.log(`[Backend] Estimated pickup time: ${estimatedTime} minutes`);
     
-    res.json({
+    res.json({ 
       success: true,
       orderId,
       estimatedTime,
@@ -169,6 +169,24 @@ app.post('/api/orders', (req, res) => {
     console.error('[Backend] Error processing order:', error.message);
     res.status(500).json({ error: 'Failed to process order' });
   }
+});
+
+// Log error endpoint (for frontend error reporting)
+app.post('/api/log/error', (req, res) => {
+  const { message, stack, clientInfo } = req.body;
+  console.error(`[Frontend Error Report] ${new Date().toISOString()}`);
+  console.error(`  Message: ${message || 'No message provided'}`);
+  if (stack) {
+    console.error(`  Stack: ${stack}`);
+  }
+  if (clientInfo) {
+    console.error(`  Client Info: ${JSON.stringify(clientInfo)}`);
+  }
+  
+  // In a real application, you would save this to a log file, database,
+  // or send it to an error tracking service (e.g., Sentry, Bugsnag).
+
+  res.status(200).json({ success: true, message: 'Error log received' });
 });
 
 // 404 handler
@@ -187,7 +205,7 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log('='.repeat(50));
   console.log(`[Backend] KnightShop Cafe API Server`);
   console.log(`[Backend] Server is running on port ${PORT}`);

@@ -37,13 +37,8 @@ function App() {
   const handleAddToCart = (item) => {
     console.log('[Frontend] Adding item to cart:', item.name);
     
-    // Bug: Golden Latte causes an error when adding to cart
-    if (item.name === 'Golden Latte') {
-      console.error('[Frontend] ERROR: Failed to add Golden Latte to cart - item.price is undefined');
-      console.error('[Frontend] Stack trace: Cannot read property "toFixed" of undefined');
-      alert('Oops! There was an error adding this item to your cart. Please try a different item.');
-      throw new Error(`Cannot add ${item.name} to cart: price calculation failed`);
-    }
+    // The previous bug simulation for 'Golden Latte' is removed.
+    // 'Golden Latte' can now be added to the cart like any other item.
     
     setCart([...cart, { ...item, cartId: Date.now() }]);
     console.log('[Frontend] Cart updated. Total items:', cart.length + 1);
